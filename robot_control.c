@@ -103,22 +103,16 @@ unsigned char get_gpio5_voltage(void *param)
         vlt_max = (voltage > vlt_max) ? voltage : vlt_max;
         vlt_min = (voltage < vlt_min) ? voltage : vlt_min;
     }
-    printf("vlt_max is %f\r\n", vlt_max);
-    printf("vlt_min is %f\r\n", vlt_min);
-    printf("\n");
+    // printf("vlt_max is %f\r\n", vlt_max);
+    // printf("vlt_min is %f\r\n", vlt_min);
+    // printf("\n");
     if (vlt_max > 0.01 && vlt_max < 0.3) {
         gpio5_isr_func_mode();
-    } else if(vlt_max > 0.6 && vlt_max < 1.0){
-        if (SPEED_FORWARD <= 7500) {
-            SPEED_FORWARD += 500;
+    } else if(vlt_max > 0.6 && vlt_max < 1.5){
+        if (SPEED_FORWARD <= 7000) {
+            SPEED_FORWARD += 1000;
         } else {
-            SPEED_FORWARD = 8000;
-        }
-    } else if(vlt_max > 1.0 && vlt_max < 1.5){
-        if (SPEED_FORWARD >= 500) {  // 避免下溢
-            SPEED_FORWARD -= 500;
-        } else {
-            SPEED_FORWARD = 0;
+            SPEED_FORWARD = 4000;
         }
     }
 }

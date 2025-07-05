@@ -51,9 +51,14 @@ volatile IotGpioValue g_trace_right = IOT_GPIO_VALUE1;
 
 extern void pwm_init();
 extern void set_wheel_pwm(unsigned short left_duty, unsigned short right_duty);
+extern float GetDistance(void);
 
-unsigned short SPEED_TURN = 4000;
+#define DISTANCE_BETWEEN_CAR_AND_OBSTACLE 20.0f
+
+unsigned short SPEED_TURN = 5000;
 unsigned short SPEED_FORWARD = 6000;
+unsigned int MOVING_STATUS = 0;
+static unsigned char obstacle_detected = 0;
 
 //获取红外传感器的值，调整电机的状态
 void timer1_callback(unsigned int arg)
@@ -75,24 +80,58 @@ void trace_module(void)
     hi_timer_start(timer_id1, HI_TIMER_TYPE_PERIOD, 1, timer1_callback, 0);
 
     while (1) {
-        // 只根据g_trace_left/g_trace_right做决策
+        // float distance = GetDistance();
+        
+        // // 检查前方是否有障碍物
+        // if (distance < DISTANCE_BETWEEN_CAR_AND_OBSTACLE) {
+        //     // 检测到障碍物，停车并等待
+        //     set_wheel_pwm(0, 0);
+        //     MOVING_STATUS = 4;  // 障碍物状态码
+        //     printf("[trace] Obstacle detected at %.2f cm, stopping...\n", distance);
+            
+        //     // 持续检测直到障碍物消失
+        //     while (1) {
+        //         float current_distance = GetDistance();
+        //         if (current_distance >= DISTANCE_BETWEEN_CAR_AND_OBSTACLE) {
+        //             printf("[trace] Obstacle cleared, resuming trace mode\n");
+        //             break;
+        //         }
+        //         hi_udelay(100000); // 100ms延时，减少检测频率
+                
+        //         // 检查是否需要退出循迹模式
+        //         if (g_car_status != CAR_TRACE_STATUS) {
+        //             break;
+        //         }
+        //     }
+        //     if (g_car_status != CAR_TRACE_STATUS) {
+        //         break;
+        //     }
+        //     // 障碍物消失后，继续循迹逻辑
+        //     continue;
+        // }
+
         if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right == IOT_GPIO_VALUE0) {
             // 两边都检测到黑色，刹车
             set_wheel_pwm(0, 0);
-            //printf("[trace] Brake: both sensors on black\n");
+            MOVING_STATUS = 0;  //停车状态码
+            printf("[trace] Brake: both sensors on black\n");
         } else if (g_trace_right == IOT_GPIO_VALUE0 && g_trace_left != IOT_GPIO_VALUE0) {
             // 右边黑线，左边白，右转
             set_wheel_pwm(SPEED_TURN, 0);
-            //printf("[trace] Turn right\n");
+            MOVING_STATUS = 1;  //右转状态码
+            printf("[trace] Turn right\n");
         } else if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right != IOT_GPIO_VALUE0) {
             // 左边黑线，右边白，左转
             set_wheel_pwm(0, SPEED_TURN);
-            //printf("[trace] Turn left\n");
-        } else {
+            MOVING_STATUS = 2;  //左转状态码
+            printf("[trace] Turn left\n");
+        } else if(g_trace_left == IOT_GPIO_VALUE1 && g_trace_right == IOT_GPIO_VALUE1){
             // 都是白色，直行
             set_wheel_pwm(SPEED_FORWARD, SPEED_FORWARD);
-            //printf("[trace] Forward\n");
+            MOVING_STATUS = 3;  //直行状态码
+            printf("[trace] Forward\n");
         }
+        
         hi_udelay(20);
         if (g_car_status != CAR_TRACE_STATUS) {
             break;

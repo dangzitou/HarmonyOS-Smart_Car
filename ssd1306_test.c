@@ -21,6 +21,15 @@
 #define FUNC_SCL 6
 extern unsigned char g_car_status;
 extern unsigned short SPEED_FORWARD;
+extern unsigned int MOVING_STATUS;
+
+char moving_status[5][20] = {
+    "Stopping...",
+    "Turing right...",
+    "Turing left...",
+    "Moving forward...",
+    "Obstacles ahead..."
+};
 
 void Ssd1306TestTask(void* arg)
 {
@@ -65,6 +74,18 @@ void Ssd1306TestTask(void* arg)
             char speed_str[20];  // 创建字符串缓冲区
             sprintf(speed_str, "Speed: %u", SPEED_FORWARD);  // 格式化转换
             ssd1306_DrawString(speed_str, Font_7x10, White);
+
+            ssd1306_SetCursor(10, 45);
+            if(MOVING_STATUS == 0)
+                ssd1306_DrawString(moving_status[0], Font_7x10, White);
+            else if(MOVING_STATUS == 1)
+                ssd1306_DrawString(moving_status[1], Font_7x10, White);
+            else if(MOVING_STATUS == 2)
+                ssd1306_DrawString(moving_status[2], Font_7x10, White);
+            else if(MOVING_STATUS == 3)
+                ssd1306_DrawString(moving_status[3], Font_7x10, White);
+            else if(MOVING_STATUS == 4)
+                ssd1306_DrawString(moving_status[4], Font_7x10, White);
         }
         ssd1306_UpdateScreen();
         osDelay(10);
