@@ -59,14 +59,13 @@ unsigned short SPEED_TURN = 5000;
 unsigned short SPEED_FORWARD = 6000;
 unsigned int MOVING_STATUS = 0;
 
-// 新增：避障相关变量
 static int g_obstacle_detected = 0;  // 障碍物检测标志
 static int g_obstacle_check_counter = 0;  // 避障检测计数器
 
 //获取红外传感器的值，调整电机的状态
 void timer1_callback(unsigned int arg)
 {
-    // 每50ms检测一次障碍物（50次定时器中断）
+    // 使用计数器,使得每50ms检测一次障碍物
     g_obstacle_check_counter++;
     if (g_obstacle_check_counter >= 50) {
         g_obstacle_check_counter = 0;
@@ -77,7 +76,7 @@ void timer1_callback(unsigned int arg)
         // 检查是否有障碍物
         if (distance < DISTANCE_BETWEEN_CAR_AND_OBSTACLE) {
             if (!g_obstacle_detected) {
-                printf("🚨 Obstacle detected! Distance: %.2f cm\n", distance);
+                printf("Obstacle detected! Distance: %.2f cm\n", distance);
                 g_obstacle_detected = 1;
                 // 立即停止小车
                 set_wheel_pwm(0, 0);
