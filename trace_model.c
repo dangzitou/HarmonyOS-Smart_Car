@@ -26,16 +26,6 @@
 #define GPIO_FUNC 0
 #define car_speed_left 0
 #define car_speed_right 0
-extern unsigned char g_car_status;   
-
-unsigned int g_car_speed_left = car_speed_left;
-unsigned int g_car_speed_right = car_speed_right;
-IotGpioValue io_status_left;
-IotGpioValue io_status_right;
-
-// 全局变量，保存红外传感器状态（volatile保证多线程/中断下数据一致性）
-volatile IotGpioValue g_trace_left = IOT_GPIO_VALUE1;
-volatile IotGpioValue g_trace_right = IOT_GPIO_VALUE1;
 
 #define PWM_DUTY_MAX 8000 // 最大占空比
 #define PWM_FREQ 8000 // PWM频率
@@ -49,11 +39,22 @@ volatile IotGpioValue g_trace_right = IOT_GPIO_VALUE1;
 #define IO_FUNC_GPIO_0_PWM3_OUT HI_IO_FUNC_GPIO_0_PWM3_OUT
 #define IO_FUNC_GPIO_9_PWM0_OUT HI_IO_FUNC_GPIO_9_PWM0_OUT
 
+#define DISTANCE_BETWEEN_CAR_AND_OBSTACLE 20.0f
+
+extern unsigned char g_car_status;   
+unsigned int g_car_speed_left = car_speed_left;
+unsigned int g_car_speed_right = car_speed_right;
+IotGpioValue io_status_left;
+IotGpioValue io_status_right;
+
+// 全局变量，保存红外传感器状态（volatile保证多线程/中断下数据一致性）
+volatile IotGpioValue g_trace_left = IOT_GPIO_VALUE1;
+volatile IotGpioValue g_trace_right = IOT_GPIO_VALUE1;
+
 extern void pwm_init();
 extern void set_wheel_pwm(unsigned short left_duty, unsigned short right_duty);
 extern float GetDistance(void);
 
-#define DISTANCE_BETWEEN_CAR_AND_OBSTACLE 20.0f
 
 unsigned short SPEED_TURN = 5000;
 unsigned short SPEED_FORWARD = 6000;
