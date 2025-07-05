@@ -82,11 +82,11 @@ robot_demo/
 - **按键调节**：在循迹模式下调节运行速度, 按S1或S2加速
 
 ### 速度参数
-- `SPEED_FORWARD`：前进速度（默认：6000，范围：0-8000）
-- `SPEED_TURN`：转弯速度（默认：5000，范围：0-8000）
+- `SPEED_FORWARD`：前进速度（默认：6000，范围：4000-8000）
+- `SPEED_TURN`：转弯速度（默认：5000）
 - `PWM_DUTY_MAX`：最大PWM占空比（8000）
 - `PWM_FREQ`：PWM频率（8000Hz）
-- 速度调节步长：500
+- 速度调节步长：1000
 
 ### 避障参数
 - `DISTANCE_BETWEEN_CAR_AND_OBSTACLE`：避障检测距离（20.0cm）
