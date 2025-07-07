@@ -12,9 +12,12 @@
 typedef enum {
     CAR_STOP_STATUS = 0,
     CAR_OBSTACLE_AVOIDANCE_STATUS, 
-    CAR_TRACE_STATUS
+    CAR_TRACE_STATUS,
+    CAR_CONTROL_STATUS
 } CarStatus;
+
 
 void switch_init(void);
 void interrupt_monitor(void);
+void car_mode_control_func(void);
 #endif

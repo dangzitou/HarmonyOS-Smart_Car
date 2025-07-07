@@ -23,12 +23,13 @@ extern unsigned char g_car_status;
 extern unsigned short SPEED_FORWARD;
 extern unsigned int MOVING_STATUS;
 
-char moving_status[5][20] = {
+char moving_status[6][20] = {
     "Stopping...",
     "Turing right...",
     "Turing left...",
     "Moving forward...",
-    "Obstacles ahead..."
+    "Obstacles ahead...",
+    "Moving backward..."
 };
 
 void Ssd1306TestTask(void* arg)
@@ -56,7 +57,7 @@ void Ssd1306TestTask(void* arg)
     {
         //printf("g_car_status is %d\r\n",g_car_status);
         ssd1306_Fill(Black);
-        ssd1306_SetCursor(10, 10);
+        ssd1306_SetCursor(5, 10);
         if(g_car_status == CAR_OBSTACLE_AVOIDANCE_STATUS) {
             
             ssd1306_DrawString("ultrasonic", Font_7x10, White);
@@ -69,13 +70,13 @@ void Ssd1306TestTask(void* arg)
         else if (g_car_status == CAR_TRACE_STATUS)
         {
             ssd1306_DrawString("trace", Font_7x10, White);
-            ssd1306_SetCursor(10, 30);
+            ssd1306_SetCursor(5, 30);
 
             char speed_str[20];  // 创建字符串缓冲区
             sprintf(speed_str, "Speed: %u", SPEED_FORWARD);  // 格式化转换
             ssd1306_DrawString(speed_str, Font_7x10, White);
 
-            ssd1306_SetCursor(10, 45);
+            ssd1306_SetCursor(5, 45);
             if(MOVING_STATUS == 0)
                 ssd1306_DrawString(moving_status[0], Font_7x10, White);
             else if(MOVING_STATUS == 1)
@@ -86,6 +87,30 @@ void Ssd1306TestTask(void* arg)
                 ssd1306_DrawString(moving_status[3], Font_7x10, White);
             else if(MOVING_STATUS == 4)
                 ssd1306_DrawString(moving_status[4], Font_7x10, White);
+            else if(MOVING_STATUS == 5)
+                ssd1306_DrawString(moving_status[5], Font_7x10, White);
+        }
+        else if (g_car_status == CAR_CONTROL_STATUS){
+            ssd1306_DrawString("control", Font_7x10, White);
+            ssd1306_SetCursor(5, 30);
+
+            char speed_str[20];  // 创建字符串缓冲区
+            sprintf(speed_str, "Speed: %u", SPEED_FORWARD);  // 格式化转换
+            ssd1306_DrawString(speed_str, Font_7x10, White);
+
+            ssd1306_SetCursor(5, 45);
+            if(MOVING_STATUS == 0)
+                ssd1306_DrawString(moving_status[0], Font_7x10, White);
+            else if(MOVING_STATUS == 1)
+                ssd1306_DrawString(moving_status[1], Font_7x10, White);
+            else if(MOVING_STATUS == 2)
+                ssd1306_DrawString(moving_status[2], Font_7x10, White);
+            else if(MOVING_STATUS == 3)
+                ssd1306_DrawString(moving_status[3], Font_7x10, White);
+            else if(MOVING_STATUS == 4)
+                ssd1306_DrawString(moving_status[4], Font_7x10, White);
+            else if(MOVING_STATUS == 5)
+                ssd1306_DrawString(moving_status[5], Font_7x10, White);
         }
         ssd1306_UpdateScreen();
         osDelay(10);

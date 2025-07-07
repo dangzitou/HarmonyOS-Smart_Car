@@ -10,6 +10,8 @@
 #include "robot_control.h"
 #include "hi_adc.h"
 #include "iot_errno.h"
+#include "robot_l9110s.h"
+#include "udp_control.h"
 
 #define GPIO5 5
 #define FUNC_GPIO 0
@@ -25,6 +27,7 @@ unsigned char   g_car_control_mode = 0;
 unsigned char   g_car_speed_control = 0;
 unsigned int  g_car_control_demo_task_id = 0;
 unsigned char   g_car_status = CAR_STOP_STATUS;
+int udp_thread_created = 0;
 
 extern float GetDistance(void);
 extern void trace_module(void);
@@ -36,8 +39,6 @@ extern void car_stop(void);
 extern void engine_turn_left(void);
 extern void engine_turn_right(void);
 extern void regress_middle(void);
-
-extern unsigned short SPEED_FORWARD;
 
 void switch_init(void)
 {
@@ -69,7 +70,10 @@ void gpio5_isr_func_mode(void)
         g_car_status = CAR_OBSTACLE_AVOIDANCE_STATUS;   //超声波
         printf("ultrasonic\n");
     } else if (g_car_status == CAR_OBSTACLE_AVOIDANCE_STATUS) {                           
-        g_car_status = CAR_STOP_STATUS;                 //停止
+        g_car_status = CAR_CONTROL_STATUS;                 //远控
+        printf("control\n");
+    } else if (g_car_status == CAR_CONTROL_STATUS) {    //停止
+        g_car_status = CAR_STOP_STATUS;
         printf("stop\n");
     }
 }
@@ -179,10 +183,10 @@ static void car_where_to_go(float distance)
         printf("ret is %d\r\n", ret);
         if (ret == CAR_TURN_LEFT) {
             car_left();
-            hi_sleep(500);
+            hi_sleep(750);
         } else if (ret == CAR_TURN_RIGHT) {
             car_right();
-            hi_sleep(500);
+            hi_sleep(750);
         }
         car_stop();
     } else {
@@ -191,8 +195,9 @@ static void car_where_to_go(float distance)
 }
 
 /*car mode control func*/
-static void car_mode_control_func(void)
+void car_mode_control_func(void)
 {
+    pwm_init();
     float m_distance = 0.0;
     regress_middle();
     while (1) {
@@ -216,6 +221,12 @@ void *RobotCarTestTask(void* param)
     switch_init();
     interrupt_monitor();
 
+    if (!udp_thread_created) {
+        start_udp_thread();
+        udp_thread_created = 1;
+        printf("UDP thread started at startup\r\n");
+    }
+
     while (1) {
         switch (g_car_status) {
             case CAR_STOP_STATUS:
@@ -226,6 +237,10 @@ void *RobotCarTestTask(void* param)
                 break;
             case CAR_TRACE_STATUS:
                 trace_module();
+                break;
+            case CAR_CONTROL_STATUS:
+                // 进入远控模式时先停止小车，等待UDP控制指令
+                car_stop();
                 break;
             default:
                 break;

@@ -10,6 +10,8 @@
 #include "hi_timer.h"
 #include "iot_pwm.h"
 
+#include "robot_l9110s.h"
+
 //左右两轮电机各由一个L9110S驱动
 //GPOI0和GPIO1控制左轮,GPIO9和GPIO10控制右轮。通过输入GPIO的电平高低控制车轮正转/反转/停止/刹车。
 #define GPIO0 0
@@ -27,18 +29,6 @@
 #define car_speed_left 0
 #define car_speed_right 0
 
-#define PWM_DUTY_MAX 8000 // 最大占空比
-#define PWM_FREQ 8000 // PWM频率
-
-#define PWM_PORT_LEFT HI_PWM_PORT_PWM3   // GPIO0 -> PWM3
-#define PWM_PORT_RIGHT HI_PWM_PORT_PWM0  // GPIO9 -> PWM0
-#define IO_NAME_GPIO_0 0
-#define IO_NAME_GPIO_1 1
-#define IO_NAME_GPIO_9 9
-#define IO_NAME_GPIO_10 10
-#define IO_FUNC_GPIO_0_PWM3_OUT HI_IO_FUNC_GPIO_0_PWM3_OUT
-#define IO_FUNC_GPIO_9_PWM0_OUT HI_IO_FUNC_GPIO_9_PWM0_OUT
-
 #define DISTANCE_BETWEEN_CAR_AND_OBSTACLE 20.0f
 
 extern unsigned char g_car_status;   
@@ -51,13 +41,8 @@ IotGpioValue io_status_right;
 volatile IotGpioValue g_trace_left = IOT_GPIO_VALUE1;
 volatile IotGpioValue g_trace_right = IOT_GPIO_VALUE1;
 
-extern void pwm_init();
-extern void set_wheel_pwm(unsigned short left_duty, unsigned short right_duty);
 extern float GetDistance(void);
 
-
-unsigned short SPEED_TURN = 5000;
-unsigned short SPEED_FORWARD = 6000;
 unsigned int MOVING_STATUS = 0;
 
 static int g_obstacle_detected = 0;  // 障碍物检测标志
@@ -80,7 +65,7 @@ void timer1_callback(unsigned int arg)
                 printf("Obstacle detected! Distance: %.2f cm\n", distance);
                 g_obstacle_detected = 1;
                 // 立即停止小车
-                set_wheel_pwm(0, 0);
+                car_stop();
                 MOVING_STATUS = 4;  // 障碍物状态码
             }
         } else {
@@ -106,7 +91,7 @@ void trace_module(void)
     unsigned int timer_id1;
     pwm_init();
 
-    set_wheel_pwm(0, 0);
+    car_stop();
 
     // 初始化避障检测变量
     g_obstacle_detected = 0;
@@ -121,22 +106,22 @@ void trace_module(void)
         if (!g_obstacle_detected) {
             if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right == IOT_GPIO_VALUE0) {
                 // 两边都检测到黑色，刹车
-                set_wheel_pwm(0, 0);
+                car_stop();
                 MOVING_STATUS = 0;  //停车状态码
                 printf("[trace] Brake: both sensors on black\n");
             } else if (g_trace_right == IOT_GPIO_VALUE0 && g_trace_left != IOT_GPIO_VALUE0) {
                 // 右边黑线，左边白，右转
-                set_wheel_pwm(SPEED_TURN, 0);
+                car_right();
                 MOVING_STATUS = 1;  //右转状态码
                 printf("[trace] Turn right\n");
             } else if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right != IOT_GPIO_VALUE0) {
                 // 左边黑线，右边白，左转
-                set_wheel_pwm(0, SPEED_TURN);
+                car_left();
                 MOVING_STATUS = 2;  //左转状态码
                 printf("[trace] Turn left\n");
             } else if(g_trace_left == IOT_GPIO_VALUE1 && g_trace_right == IOT_GPIO_VALUE1){
                 // 都是白色，直行
-                set_wheel_pwm(SPEED_FORWARD, SPEED_FORWARD);
+                car_forward();
                 MOVING_STATUS = 3;  //直行状态码
                 printf("[trace] Forward\n");
             }
@@ -148,7 +133,6 @@ void trace_module(void)
         }
     }
     // 退出trace模式，关闭PWM
-    hi_pwm_stop(PWM_PORT_LEFT);
-    hi_pwm_stop(PWM_PORT_RIGHT);
+    pwm_stop();
     hi_timer_delete(timer_id1);
 }

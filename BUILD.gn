@@ -32,7 +32,9 @@ static_library("robot_demo") {
         "robot_sg90.c",
         "trace_model.c",
         "ssd1306_test.c",
-        "robot_control.c"
+        "robot_control.c",
+        "udp_control.c",
+        "sta_entry.c"
     ]
 
     include_dirs = [
@@ -40,8 +42,13 @@ static_library("robot_demo") {
         "//utils/native/lite/include",
         "//kernel/liteos_m/kal/cmsis",
         "//base/iot_hardware/peripheral/interfaces/kits",
+        "//third_party/cJSON/",
+        "//device/soc/hisilicon/hi3861v100/sdk_liteos/third_party/lwip_sack/include",
+        "//device/soc/hisilicon/hi3861v100/hi3861_adapter/hals/communication/wifi_lite/wifiservice",
     ]
-    deps = ["ssd1306:oled_ssd1306"]
+    deps = [
+        "ssd1306:oled_ssd1306",
+    ]
 }
 
 
