@@ -61,11 +61,31 @@ void Ssd1306TestTask(void* arg)
         if(g_car_status == CAR_OBSTACLE_AVOIDANCE_STATUS) {
             
             ssd1306_DrawString("ultrasonic", Font_7x10, White);
-            
+            ssd1306_SetCursor(5, 30);
+            char speed_str[20];  // 创建字符串缓冲区
+            sprintf(speed_str, "Speed: %u", SPEED_FORWARD);  // 格式化转换
+            ssd1306_DrawString(speed_str, Font_7x10, White);
+            ssd1306_SetCursor(5, 45);
+            if(MOVING_STATUS == 0)
+                ssd1306_DrawString(moving_status[0], Font_7x10, White);
+            else if(MOVING_STATUS == 1)
+                ssd1306_DrawString(moving_status[1], Font_7x10, White);
+            else if(MOVING_STATUS == 2)
+                ssd1306_DrawString(moving_status[2], Font_7x10, White);
+            else if(MOVING_STATUS == 3)
+                ssd1306_DrawString(moving_status[3], Font_7x10, White);
+            else if(MOVING_STATUS == 4)
+                ssd1306_DrawString(moving_status[4], Font_7x10, White);
+            else if(MOVING_STATUS == 5)
+                ssd1306_DrawString(moving_status[5], Font_7x10, White);
         }
         else if (g_car_status == CAR_STOP_STATUS)
         {
             ssd1306_DrawString("Robot Car Stop", Font_7x10, White);
+            ssd1306_SetCursor(5, 30);
+            char speed_str[20];  // 创建字符串缓冲区
+            sprintf(speed_str, "Speed: %u", SPEED_FORWARD);  // 格式化转换
+            ssd1306_DrawString(speed_str, Font_7x10, White);
         }
         else if (g_car_status == CAR_TRACE_STATUS)
         {

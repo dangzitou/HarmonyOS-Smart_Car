@@ -48,6 +48,11 @@ unsigned int MOVING_STATUS = 0;
 static int g_obstacle_detected = 0;  // 障碍物检测标志
 static int g_obstacle_check_counter = 0;  // 避障检测计数器
 
+// 黑线持续检测时间阈值（单位：ms），可根据需要调整
+unsigned int black_line_detect_time_ms = 50; 
+unsigned int black_line_counter = 0; // 黑线检测计数器
+volatile int g_black_line_stop = 0; // 黑线停车标志
+
 //获取红外传感器的值，调整电机的状态
 void timer1_callback(unsigned int arg)
 {
@@ -84,6 +89,17 @@ void timer1_callback(unsigned int arg)
     // 正常的循迹逻辑：采集红外传感器状态
     IoTGpioGetInputVal(GPIO11, (IotGpioValue*)&g_trace_left);
     IoTGpioGetInputVal(GPIO12, (IotGpioValue*)&g_trace_right);
+
+    // 黑线持续检测逻辑
+    if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right == IOT_GPIO_VALUE0) {
+        black_line_counter++;
+        if (black_line_counter >= black_line_detect_time_ms) {
+            g_black_line_stop = 1;
+        }
+    } else {
+        black_line_counter = 0;
+        g_black_line_stop = 0;
+    }
 }
 
 void trace_module(void)
@@ -96,6 +112,8 @@ void trace_module(void)
     // 初始化避障检测变量
     g_obstacle_detected = 0;
     g_obstacle_check_counter = 0;
+    g_black_line_stop = 0;
+    black_line_counter = 0;
 
     hi_timer_create(&timer_id1);
     // 启动系统周期定时器用来按照预定的时间间隔1ms触发timer1_callback任务的执行
@@ -104,29 +122,31 @@ void trace_module(void)
     while (1) {
         // 只有在没有检测到障碍物时才执行循迹逻辑
         if (!g_obstacle_detected) {
-            if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right == IOT_GPIO_VALUE0) {
-                // 两边都检测到黑色，刹车
+            if (g_black_line_stop) {
                 car_stop();
-                MOVING_STATUS = 0;  //停车状态码
-                printf("[trace] Brake: both sensors on black\n");
-            } else if (g_trace_right == IOT_GPIO_VALUE0 && g_trace_left != IOT_GPIO_VALUE0) {
-                // 右边黑线，左边白，右转
-                car_right();
-                MOVING_STATUS = 1;  //右转状态码
-                printf("[trace] Turn right\n");
-            } else if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right != IOT_GPIO_VALUE0) {
-                // 左边黑线，右边白，左转
-                car_left();
-                MOVING_STATUS = 2;  //左转状态码
-                printf("[trace] Turn left\n");
-            } else if(g_trace_left == IOT_GPIO_VALUE1 && g_trace_right == IOT_GPIO_VALUE1){
-                // 都是白色，直行
-                car_forward();
-                MOVING_STATUS = 3;  //直行状态码
-                printf("[trace] Forward\n");
+                MOVING_STATUS = 0;
+                printf("[trace] Brake: black line detected for %d ms\n", black_line_detect_time_ms);
+            } else {
+                // 只保留左转/右转/直行逻辑，不再遇到黑线就立即停车
+                if (g_trace_right == IOT_GPIO_VALUE0 && g_trace_left != IOT_GPIO_VALUE0) {
+                    car_right();
+                    MOVING_STATUS = 1;
+                    printf("[trace] Turn right\n");
+                } else if (g_trace_left == IOT_GPIO_VALUE0 && g_trace_right != IOT_GPIO_VALUE0) {
+                    car_left();
+                    MOVING_STATUS = 2;
+                    printf("[trace] Turn left\n");
+                } else if(g_trace_left == IOT_GPIO_VALUE1 && g_trace_right == IOT_GPIO_VALUE1){
+                    car_forward();
+                    MOVING_STATUS = 3;
+                    printf("[trace] Forward\n");
+                }else if(g_trace_left == IOT_GPIO_VALUE0 && g_trace_right == IOT_GPIO_VALUE0){
+                    car_forward();
+                    MOVING_STATUS = 3;
+                    printf("[trace] Forward\n");
+                }
             }
         }
-    
         hi_udelay(20);
         if (g_car_status != CAR_TRACE_STATUS) {
             break;

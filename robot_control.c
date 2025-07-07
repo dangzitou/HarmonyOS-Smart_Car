@@ -39,6 +39,7 @@ extern void car_stop(void);
 extern void engine_turn_left(void);
 extern void engine_turn_right(void);
 extern void regress_middle(void);
+extern unsigned int MOVING_STATUS;
 
 void switch_init(void)
 {
@@ -175,22 +176,29 @@ static void car_where_to_go(float distance)
 {
     if (distance < DISTANCE_BETWEEN_CAR_AND_OBSTACLE) {
         car_stop();
+        MOVING_STATUS = 0;
         hi_sleep(500);
         car_backward();
+        MOVING_STATUS = 5;
         hi_sleep(500);
         car_stop();
+        MOVING_STATUS = 0;
         unsigned int ret = engine_go_where();
         printf("ret is %d\r\n", ret);
         if (ret == CAR_TURN_LEFT) {
             car_left();
+            MOVING_STATUS = 2;
             hi_sleep(750);
         } else if (ret == CAR_TURN_RIGHT) {
             car_right();
+            MOVING_STATUS = 1;
             hi_sleep(750);
         }
         car_stop();
+        MOVING_STATUS = 0;
     } else {
         car_forward();
+        MOVING_STATUS = 3;
         } 
 }
 
