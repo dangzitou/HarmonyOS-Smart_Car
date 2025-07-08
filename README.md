@@ -245,18 +245,16 @@ if (检测计数器 >= 50) {
 
 ## 版本历史
 
-### v2.0.0 (2025-01-06)
-- 新增融合避障循迹功能
+### v2.0.0 (2025-07-08)
+- 优化终点线检测宽度（ms）
+- Robot Car Stop模式下也能在OLED屏幕显示速度
+
+### v1.5.0 (2025-07-07)
 - 优化超声波检测频率（50ms）
-- 改进PWM控制精度
-- 完善错误处理机制
+- 添加终点线检测
+- 转弯时电机一前一后
 
-### v1.5.0 (2024-12-15)
-- 添加OLED显示支持
-- 实现多模式切换
-- 优化按键防抖算法
-
-### v1.0.0 (2024-11-01)
+### v1.0.0 (2025-07-04)
 - 基础循迹功能实现
 - 超声波避障功能
 - PWM电机控制
@@ -267,9 +265,6 @@ if (检测计数器 >= 50) {
 - **项目发起人**：[HiHope开源社区](https://gitee.com/hihope_iot)
 - **技术支持**：[开发者个人主页](https://dangzitou.github.io)
 - **文档维护**：OpenHarmony社区志愿者
-
-### 特别鸣谢
-感谢所有为本项目贡献代码、文档和建议的开发者们！
 
 ## 许可证
 
@@ -291,11 +286,6 @@ if (检测计数器 >= 50) {
 - [OpenHarmony开发者社区](https://gitee.com/openharmony/community)
 - [HiHope技术论坛](https://bbs.elecfans.com/group_1429)
 - [鸿蒙开发者官网](https://developer.harmonyos.com/)
-
-### 硬件采购
-- [Hi3861开发板](https://item.taobao.com/item.htm?id=633296694816)
-- [配套传感器套件](https://www.hihope.org/product)
-- [机器人底盘套件](https://shop.m5stack.com/)
 
 ## 常见问题FAQ
 
