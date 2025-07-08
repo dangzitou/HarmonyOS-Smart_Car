@@ -1,0 +1,26 @@
+# VSCode配置文件
+.vscode/
+.vscode/*
+
+# 编译输出文件
+build/
+out/
+*.o
+*.a
+*.so
+*.bin
+*.hex
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+
+# Python缓存文件
+__pycache__/
+*.pyc
+*.pyo
+
+# 系统文件
+.DS_Store
+Thumbs.db
