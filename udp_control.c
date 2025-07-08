@@ -131,6 +131,18 @@ void udp_control(char *recvline){
                 MOVING_STATUS = 0;
                 printf("stop\r\n");
             }
+            // 新增：处理速度指令
+            else if(strcmp("speed", cmdItem->valuestring) == 0)
+            {
+                cJSON *valueItem = cJSON_GetObjectItem(recvjson, "value");
+                if (valueItem && cJSON_IsNumber(valueItem)) {
+                    extern unsigned short SPEED_FORWARD;
+                    SPEED_FORWARD = (unsigned short)valueItem->valueint;
+                    printf("Set SPEED_FORWARD to %d\r\n", SPEED_FORWARD);
+                } else {
+                    printf("speed command missing or invalid value\r\n");
+                }
+            }
             else
             {
                 printf("Unknown command: %s\r\n", cmdItem->valuestring);
@@ -262,7 +274,7 @@ void start_udp_thread(void)
     attr.cb_mem = NULL;
     attr.cb_size = 0U;
     attr.stack_mem = NULL;
-    attr.stack_size = 4096;
+    attr.stack_size = 4096*2;
     attr.priority = 36;
 
     if (osThreadNew((osThreadFunc_t)udp_thread, NULL, &attr) == NULL) {
