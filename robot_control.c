@@ -247,8 +247,8 @@ void *RobotCarTestTask(void* param)
                 trace_module();
                 break;
             case CAR_CONTROL_STATUS:
-                // 进入远控模式时先停止小车，等待UDP控制指令
-                car_stop();
+                // 远控模式下，不在这里执行car_stop()，避免与UDP控制指令冲突
+                // UDP控制指令会直接控制小车，这里只需要等待
                 break;
             default:
                 break;

@@ -19,6 +19,10 @@ extern unsigned int MOVING_STATUS;
 extern unsigned char g_car_status;
 char recvline[1024];
 
+// 添加状态变量，避免重复执行相同指令
+static int last_moving_status = -1;
+static unsigned long last_command_time = 0;
+
 void cotrl_handle(char *recvline, int ret)
 {
     cJSON *recvjson;
@@ -91,40 +95,37 @@ void udp_control(char *recvline){
         {
             printf("cmd : %s\r\n", cmdItem->valuestring);
             // 确保在远控模式下才响应控制指令
-            // if (g_car_status != CAR_CONTROL_STATUS) {
-            //     printf("Not in remote control mode, ignore control commands\r\n");
-            //     cJSON_Delete(recvjson);
-            //     return;
-            // }
+            if (g_car_status != CAR_CONTROL_STATUS) {
+                printf("Not in remote control mode, ignore control commands\r\n");
+                cJSON_Delete(recvjson);
+                return;
+            }
+            
             if(strcmp("forward", cmdItem->valuestring) == 0)
             {
                 car_forward();
                 MOVING_STATUS = 3;
                 printf("forward\r\n");
             }
-
-            if(strcmp("backward", cmdItem->valuestring) == 0)
+            else if(strcmp("backward", cmdItem->valuestring) == 0)
             {
                 car_backward();
                 MOVING_STATUS = 5;
                 printf("backward\r\n");
             }
-
-            if(strcmp("left", cmdItem->valuestring) == 0)
+            else if(strcmp("left", cmdItem->valuestring) == 0)
             {
                 car_left();
                 MOVING_STATUS = 2;
                 printf("left\r\n");
             }
-
-            if(strcmp("right", cmdItem->valuestring) == 0)
+            else if(strcmp("right", cmdItem->valuestring) == 0)
             {
                 car_right();
                 MOVING_STATUS = 1;
                 printf("right\r\n");
             }
-
-            if(strcmp("stop", cmdItem->valuestring) == 0)
+            else if(strcmp("stop", cmdItem->valuestring) == 0)
             {
                 car_stop();
                 MOVING_STATUS = 0;
@@ -223,10 +224,11 @@ void udp_thread(void *pdata)
         int sizeClientAddr = sizeof(struct sockaddr_in);
 
         memset(recvline, 0, sizeof(recvline));
-        printf("Waiting for UDP data...\r\n");
+        // 减少日志输出频率，避免影响性能
+        // printf("Waiting for UDP data...\r\n");
 
         ret = recvfrom(sockfd, recvline, 1024, 0, (struct sockaddr*)&addrClient,(socklen_t*)&sizeClientAddr);
-        printf("recvfrom returned: %d\r\n", ret);
+        // printf("recvfrom returned: %d\r\n", ret);
 
         if(ret > 0)
         {
@@ -239,12 +241,15 @@ void udp_thread(void *pdata)
         }
         else if(ret == 0)
         {
-            printf("Received empty packet\r\n");
+            // printf("Received empty packet\r\n");
         }
         else
         {
             printf("recvfrom error: %d\r\n", ret);
         }
+        
+        // 添加适当的延时，避免过于频繁的轮询
+        osDelay(10);
     }
 }
 

@@ -49,7 +49,7 @@ static int g_obstacle_detected = 0;  // 障碍物检测标志
 static int g_obstacle_check_counter = 0;  // 避障检测计数器
 
 // 黑线持续检测时间阈值（单位：ms），可根据需要调整
-unsigned int black_line_detect_time_ms = 50; 
+unsigned int black_line_detect_time_ms = 15; 
 unsigned int black_line_counter = 0; // 黑线检测计数器
 volatile int g_black_line_stop = 0; // 黑线停车标志
 

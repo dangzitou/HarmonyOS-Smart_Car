@@ -81,14 +81,14 @@ void car_forward(void) {
 // 小车左转
 void car_left(void) {
     pwm_stop();
-	hi_pwm_start(HI_PWM_PORT_PWM0, SPEED_TURN, PWM_DUTY_MAX);
+	hi_pwm_start(HI_PWM_PORT_PWM0, SPEED_FORWARD, PWM_DUTY_MAX);
     hi_pwm_start(HI_PWM_PORT_PWM4, SPEED_TURN, PWM_DUTY_MAX);
 }
 
 // 小车右转
 void car_right(void) {
     pwm_stop();
-	hi_pwm_start(HI_PWM_PORT_PWM3, SPEED_TURN, PWM_DUTY_MAX);
+	hi_pwm_start(HI_PWM_PORT_PWM3, SPEED_FORWARD, PWM_DUTY_MAX);
     hi_pwm_start(HI_PWM_PORT_PWM1, SPEED_TURN, PWM_DUTY_MAX);
 }
 
